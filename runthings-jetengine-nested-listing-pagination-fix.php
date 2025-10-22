@@ -81,6 +81,9 @@ class Plugin {
         // Force main query props to be set last (after all nested queries)
         add_action( 'jet-engine/query-builder/listings/on-query', [ $this, 'force_main_query_props_last' ], 999, 4 );
 
+        // Enqueue frontend script to fix pagination rendering
+        add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_frontend_script' ] );
+
         // Output props to JavaScript in footer (after queries have run)
         add_action( 'wp_footer', [ $this, 'output_props_to_js' ], 999 );
     }
@@ -318,6 +321,18 @@ class Plugin {
         }
     }
 
+    /**
+     * Enqueue frontend script to fix pagination rendering
+     */
+    public function enqueue_frontend_script() {
+        wp_enqueue_script(
+            'jetengine-nested-listing-pagination-fix',
+            plugin_dir_url( __FILE__ ) . 'fix-pagination.js',
+            [ 'jquery' ],
+            '1.0.0',
+            true
+        );
+    }
 
     /**
      * Output props to JavaScript in footer
