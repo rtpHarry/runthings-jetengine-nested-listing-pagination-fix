@@ -72,11 +72,15 @@ class Plugin {
             add_action( 'admin_notices', [ $this, 'show_query_edit_notice' ] );
         }
 
-        // Hook into JetEngine query builder
+        // Hook into JetEngine query builder - store main query props
         add_filter( 'jet-engine/query-builder/set-props', [ $this, 'store_main_query_props' ], 5, 3 );
 
         // Fix pagination in AJAX response
         add_filter( 'jet-smart-filters/render/ajax/data', [ $this, 'fix_pagination_in_ajax_response' ], 20 );
+
+        // Force main query props to be set last (after all nested queries)
+        add_action( 'jet-engine/query-builder/listings/on-query', [ $this, 'force_main_query_props_last' ], 999, 4 );
+
     }
 
     /**
@@ -258,10 +262,15 @@ class Plugin {
 
         // If this is a main query, store its props
         if ( in_array( $numeric_query_id, $selected_queries ) ) {
-            $this->main_query_props = $props;
+            $this->main_query_props = array(
+                'props' => $props,
+                'provider' => $provider,
+                'query_id' => $query_id
+            );
+            error_log( '=== Stored Main Query Props (ID: ' . $numeric_query_id . ') ===' );
         }
 
-        // Always return props unchanged - let all queries set their props
+        // Always return props unchanged - let all queries set their props initially
         return $props;
     }
 
@@ -272,11 +281,41 @@ class Plugin {
     public function fix_pagination_in_ajax_response( $data ) {
         // If we have stored main query props, use them for pagination
         if ( $this->main_query_props !== null ) {
-            $data['pagination'] = $this->main_query_props;
+            $data['pagination'] = $this->main_query_props['props'];
+            error_log( '=== Fixed Pagination in AJAX Response ===' );
         }
 
         return $data;
     }
+
+    /**
+     * Force main query props to be set last
+     * This runs after all queries (including nested ones) have completed
+     * and re-sets the main query props to ensure they're the final ones used
+     */
+    public function force_main_query_props_last( $query, $settings, $widget, $query_manager ) {
+        if ( ! $query || ! isset( $query->id ) ) {
+            return;
+        }
+
+        $selected_queries = $this->get_selected_query_ids();
+
+        // Only process main queries
+        if ( ! in_array( $query->id, $selected_queries ) ) {
+            return;
+        }
+
+        // If we have stored props for this query, re-set them now
+        // This ensures they override any nested query props
+        if ( $this->main_query_props !== null && isset( $this->main_query_props['props'] ) ) {
+            jet_smart_filters()->query->set_props(
+                $this->main_query_props['provider'],
+                $this->main_query_props['props'],
+                $this->main_query_props['query_id']
+            );
+        }
+    }
+
 }
 
 // Initialize plugin
