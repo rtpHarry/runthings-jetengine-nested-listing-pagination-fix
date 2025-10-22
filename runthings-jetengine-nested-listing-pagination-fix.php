@@ -81,6 +81,8 @@ class Plugin {
         // Force main query props to be set last (after all nested queries)
         add_action( 'jet-engine/query-builder/listings/on-query', [ $this, 'force_main_query_props_last' ], 999, 4 );
 
+        // Output props to JavaScript in footer (after queries have run)
+        add_action( 'wp_footer', [ $this, 'output_props_to_js' ], 999 );
     }
 
     /**
@@ -316,6 +318,24 @@ class Plugin {
         }
     }
 
+
+    /**
+     * Output props to JavaScript in footer
+     * This runs after queries have completed so props are available
+     */
+    public function output_props_to_js() {
+        if ( $this->main_query_props !== null && isset( $this->main_query_props['props'] ) ) {
+            ?>
+            <script type="text/javascript">
+                window.jetEngineNestedListingFix = <?php echo wp_json_encode( array(
+                    'provider' => $this->main_query_props['provider'],
+                    'queryId' => $this->main_query_props['query_id'],
+                    'props' => $this->main_query_props['props']
+                ) ); ?>;
+            </script>
+            <?php
+        }
+    }
 }
 
 // Initialize plugin
