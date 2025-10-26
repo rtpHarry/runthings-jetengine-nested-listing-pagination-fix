@@ -14,8 +14,6 @@
     var phpQueryId = jetEngineNestedListingFix.queryId;
     var props = jetEngineNestedListingFix.props;
 
-    console.log("Fixing pagination for:", phpProvider, phpQueryId);
-
     // Find the pagination widget that matches our provider and queryId
     $(".jet-smart-filters-pagination").each(function () {
       var $pagination = $(this);
@@ -29,8 +27,6 @@
 
       // Check if pagination is empty (not rendered)
       if ($pagination.children().length === 0) {
-        console.log("Found empty pagination widget, attempting to fix...");
-
         // Get the filter group
         if (window.JetSmartFilters && window.JetSmartFilters.filterGroups) {
           var groupKey = provider + "/" + queryId;
@@ -48,13 +44,6 @@
             }
 
             if (paginationFilter && props && props.max_num_pages) {
-              console.log(
-                "Setting pagination:",
-                props.max_num_pages,
-                "pages, current page:",
-                props.page
-              );
-
               // Set the pagination data
               paginationFilter.pagesCount = props.max_num_pages;
               paginationFilter.pageIndex = props.page;
@@ -62,7 +51,6 @@
               // Build the pagination
               if (typeof paginationFilter.buildPagination === "function") {
                 paginationFilter.buildPagination();
-                console.log("Pagination rendered successfully!");
               }
             }
           }

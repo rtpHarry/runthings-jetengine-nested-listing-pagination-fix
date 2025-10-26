@@ -272,7 +272,6 @@ class Plugin {
                 'provider' => $provider,
                 'query_id' => $query_id
             );
-            error_log( '=== Stored Main Query Props (ID: ' . $numeric_query_id . ') ===' );
         }
 
         // Always return props unchanged - let all queries set their props initially
@@ -287,7 +286,6 @@ class Plugin {
         // If we have stored main query props, use them for pagination
         if ( $this->main_query_props !== null ) {
             $data['pagination'] = $this->main_query_props['props'];
-            error_log( '=== Fixed Pagination in AJAX Response ===' );
         }
 
         return $data;
