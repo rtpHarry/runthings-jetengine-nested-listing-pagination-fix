@@ -1,0 +1,30 @@
+# Composer
+/vendor/
+composer.lock
+
+# Node.js
+/node_modules/
+package-lock.json
+
+# Build files
+/dist/
+/build/
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Other
+.runthings/
